@@ -1,8 +1,8 @@
-public class Yinsh {
+public class Yinsh{
 
 	Color[][] _plateauYinsh = new Color[11][11];
 	double _random = Math.random();
-	Color _lastplayed;
+	Color _lastplayed = Color.NULL;
 
 	public Yinsh(){
 		for (int i = 0; i < this._plateauYinsh.length; i++){
@@ -20,7 +20,7 @@ public class Yinsh {
 	}
 
 	public enum Color{
-		BlackRing, WhiteRing, NULL, UNEXISTING
+		BlackRing, WhiteRing, BlackMark, WhiteMark, NULL, UNEXISTING
 	}
 
 	public Color current_color(){
@@ -31,13 +31,24 @@ public class Yinsh {
 		}
 	}
 
-	public boolean put_ring(char coord_x, int coord_y, Color couleur){
-		if(this._plateauYinsh[coord_x-'A'][coord_y] == Color.NULL){
-			this._plateauYinsh[coord_x-'A'][coord_y] = couleur;
-			this._lastplayed = couleur;
-			return true;
-		}else{
-			return false;
+	public void put_ring(char coord_x, int coord_y, Color couleur) throws JouerDeuxFoisException, CoordonneesFaussesException, PlaceDejaPriseException {
+		try{
+			if(this._plateauYinsh[coord_x-'A'][coord_y] == Color.UNEXISTING){
+				throw new CoordonneesFaussesException();
+			}
+			if(this._plateauYinsh[coord_x-'A'][coord_y] != Color.NULL){
+				throw new PlaceDejaPriseException();
+			}
+			if(couleur != this._lastplayed){
+				if(this._plateauYinsh[coord_x-'A'][coord_y] == Color.NULL){
+					this._plateauYinsh[coord_x-'A'][coord_y] = couleur;
+					this._lastplayed = couleur;
+				}
+			}else{
+				throw new JouerDeuxFoisException();
+			}
+		}catch(ArrayIndexOutOfBoundsException e){
+			throw new CoordonneesFaussesException();
 		}
 	}
 
@@ -54,8 +65,62 @@ public class Yinsh {
 		return nb;
 	}
 
-	/*public static void main(String[] args) {
+	/*
+	public static void main(String[] args) {
 		Yinsh a = new Yinsh();
 		System.out.print(a.plateauYinsh.length);
 	}*/
+
+	public int nb_rings (Color couleur){
+		int nb = 0;
+
+		for (int i = 0; i < this._plateauYinsh.length; i++){
+			for (int j = 0; j < this._plateauYinsh.length; j++){
+				if (this._plateauYinsh[i][j] == couleur){
+					nb++;
+				}
+			}
+		}
+		return nb;
+	}
+
+	public boolean is_initialized(){
+		if(nb_rings(Color.WhiteRing) == 5 && nb_rings(Color.BlackRing) == 5){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	public void put_marker (char coord_x, int coord_y, Color couleur) throws JouerDeuxFoisException, CoordonneesFaussesException, PlaceDejaPriseException {
+		try{
+			if(this._plateauYinsh[coord_x-'A'][coord_y] == Color.UNEXISTING){
+				throw new CoordonneesFaussesException();
+			}
+			if(this._plateauYinsh[coord_x-'A'][coord_y] != Color.NULL){
+				throw new PlaceDejaPriseException();
+			}
+			if((couleur == Color.BlackMark && this._plateauYinsh[coord_x - 'A'][coord_y] == Color.WhiteRing) || (couleur == Color.WhiteMark && this._plateauYinsh[coord_x - 'A'][coord_y] == Color.BlackRing)){
+				System.out.println("Anneau de la mauvaise couleur");
+				throw new CoordonneesFaussesException();
+		}
+			
+		if(couleur != this._lastplayed){
+			if(this._plateauYinsh[coord_x-'A'][coord_y] == Color.NULL){
+				this._plateauYinsh[coord_x-'A'][coord_y] = couleur;
+				this._lastplayed = couleur;
+			}
+		}else{
+			throw new JouerDeuxFoisException();
+		}
+	}catch(ArrayIndexOutOfBoundsException e){
+		throw new CoordonneesFaussesException();
+	}
+}
+
+public void moveRing(int coord_x_r, int coord_y_r, int coord_x_nr, int coord_y_nr){
+	Color couleur = this._plateauYinsh[coord_x_r - 'A'][coord_y_r];
+	this._plateauYinsh[coord_x_r - 'A'][coord_y_r] = Color.NULL;
+	this._plateauYinsh[coord_x_nr - 'A'][coord_y_nr] = couleur;
+}
 }
